@@ -4,9 +4,6 @@ import (
     "log"
     "context"
     "errors"
-    "github.com/uptrace/bun/driver/sqliteshim"
-    "github.com/uptrace/bun/dialect/sqlitedialect"
-    "github.com/uptrace/bun/extra/bundebug"
 	m "github.com/baisystems/go-test/internal/pkg/model"
 )
 
@@ -18,7 +15,7 @@ func NewUserRepository() *UserRepository {
     return &UserRepository{users: make(map[int64]*m.User)}
 }
 
-func (u *UserRepository) CreateUser(ctx context.Context, user *m.User) error {
+func (u *UserRepository) CreateUser(cfg config, user *m.User) error {
     if _, exists := u.users[user.ID]; exists {
         return errors.New("user already exists")
     }

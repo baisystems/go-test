@@ -6,7 +6,7 @@ import (
 
 type User struct { 
 	bun.BaseModel `bun:"table:users"` 
-	ID int64 `bun:",pk,autoincrement"` 
+	ID int64 `bun:",pk"` 
 	Name string `bun:"name,notnull"` 
 	Email string `bun:"email,unique,notnull"` 
 }

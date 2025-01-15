@@ -1,31 +1,42 @@
 package main
 
 import (
-    "context"
-    "fmt"
-    "github.com/uptrace/bun"
-    "github.com/uptrace/bun/driver/sqliteshim"
-    "github.com/uptrace/bun/dialect/sqlitedialect"
-    "github.com/uptrace/bun/extra/bundebug"
-    "log"
-	m "github.com/baisystems/go-test/internal/pkg/model"
-    "githube.com/baisystems/go-test/internal/pkg/db"
+	"context"
+	"database/sql"
+	"fmt"
+
+	// "fmt"
+	// "log"
+	"github.com/baisystems/go-test/internal/app"
+	"github.com/baisystems/go-test/internal/pkg/config"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
 )
 
-var db *bun.DB
 func main() {
-    // Connect to SQLite database
-    dsn := "file::memory:?cache=shared"
-    sqldb := sqliteshim.Open(dsn)
-    defer sqldb.Close()
+	// Connect to SQLite database
+	dsn := "file::memory:?cache=shared"
+	sqldb, err := sql.Open(sqliteshim.ShimName, dsn)
+	if err != nil {
+		panic(err)
+	}
 
-    db = bun.NewDB(sqldb, sqlitedialect.New())
-    db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+    // If you are using an in-memory database, you need to configure *sql.DB to NOT close active connections.
+	sqldb.SetMaxIdleConns(1000)
+	sqldb.SetConnMaxLifetime(0)
 
-    // Create table
+	db := bun.NewDB(sqldb, sqlitedialect.New())
+    // db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
     ctx := context.Background()
-    if _, err := db.NewCreateTable().Model((*m.User)(nil)).Exec(ctx); err != nil {
-        log.Fatal(err)
+
+    config := &config.Config{
+        Ctx: ctx,
+        Db: db,
+    }
+
+    err = user.RunUser(config)
+    if err != nil {
+        fmt.Println(err.Error())
     }
 }
-
