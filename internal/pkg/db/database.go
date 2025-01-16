@@ -1,14 +1,14 @@
 package db
 
 import (
-    "context"
     m "github.com/baisystems/go-test/internal/pkg/model"
+    "github.com/baisystems/go-test/internal/pkg/config"
 )
 
 type UserRepositoryInterface interface {
-    CreateUser(ctx context.Context, user *m.User) error
-    GetUserByID(ctx context.Context, id int64) (*m.User, error)
-    UpdateUser(ctx context.Context, user *m.User) error
-    DeleteUser(ctx context.Context, id int64) error
+    CreateUser(config *config.Config, user *m.User) error
+    GetUserByID(config *config.Config, id int64) (*m.User, error)
+    UpdateUser(config *config.Config, user *m.User) error
+    DeleteUser(config *config.Config, id int64) error
 }
 

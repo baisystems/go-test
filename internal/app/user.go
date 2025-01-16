@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"github.com/baisystems/go-test/internal/pkg/config"
+	"github.com/baisystems/go-test/internal/pkg/db"
 	m "github.com/baisystems/go-test/internal/pkg/model"
 	"log"
 )
@@ -15,23 +16,24 @@ func RunUser(config *config.Config) error {
 		return err
 	}
 
+	userRepo := db.NewUserRepository()
+
 	// Insert a new user with a primary key 1
 	user := &m.User{ID: 1, Name: "Charles Bai", Email: "name@company.com"}
-	res, err := config.Db.NewInsert().Model(user).Exec(config.Ctx)
+	if err := userRepo.CreateUser(config, user); err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	// Select a user by the primary key 1.
+	// user := new(m.User)  // for newer go
+	user = &m.User{ID: 1}
+	selectedUser, err := userRepo.GetUserByID(config, user.ID)
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	n, err := res.RowsAffected()
-	fmt.Printf("rows affected: %d \n", n)
 
-	// Select a user by the primary key 1.
-	// user := new(m.User)  // for newer go
-	selectedUser := &m.User{ID: 1, Name: "", Email: ""}
-	if err := config.Db.NewSelect().Model(selectedUser).Where("id = ?", user.ID).Scan(config.Ctx); err != nil {
-		log.Fatal(err)
-		return err
-	}
 	fmt.Printf("Selected User: %+v\n", selectedUser)
 
 	// // Update user
