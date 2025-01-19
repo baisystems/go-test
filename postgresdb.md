@@ -5,15 +5,15 @@ import (
     "errors"
 )
 
-type UserRepository struct {
+type UserDatabase struct {
     users map[int64]*User
 }
 
-func NewUserRepository() *UserRepository {
-    return &UserRepository{users: make(map[int64]*User)}
+func NewUserDatabase() *UserDatabase {
+    return &UserDatabase{users: make(map[int64]*User)}
 }
 
-func (m *UserRepository) CreateUser(ctx context.Context, user *User) error {
+func (m *UserDatabase) CreateUser(ctx context.Context, user *User) error {
     if _, exists := m.users[user.ID]; exists {
         return errors.New("user already exists")
     }
@@ -21,7 +21,7 @@ func (m *UserRepository) CreateUser(ctx context.Context, user *User) error {
     return nil
 }
 
-func (m *UserRepository) GetUserByID(ctx context.Context, id int64) (*User, error) {
+func (m *UserDatabase) GetUser(ctx context.Context, id int64) (*User, error) {
     user, exists := m.users[id]
     if !exists {
         return nil, errors.New("user not found")
@@ -29,7 +29,7 @@ func (m *UserRepository) GetUserByID(ctx context.Context, id int64) (*User, erro
     return user, nil
 }
 
-func (m *UserRepository) UpdateUser(ctx context.Context, user *User) error {
+func (m *UserDatabase) UpdateUser(ctx context.Context, user *User) error {
     if _, exists := m.users[user.ID]; !exists {
         return errors.New("user not found")
     }
@@ -37,7 +37,7 @@ func (m *UserRepository) UpdateUser(ctx context.Context, user *User) error {
     return nil
 }
 
-func (m *UserRepository) DeleteUser(ctx context.Context, id int64) error {
+func (m *UserDatabase) DeleteUser(ctx context.Context, id int64) error {
     if _, exists := m.users[id]; !exists {
         return errors.New("user not found")
     }

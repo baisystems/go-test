@@ -2,41 +2,43 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"log"
+    "github.com/uptrace/bun"
 
-	// "fmt"
-	// "log"
-	"github.com/baisystems/go-test/internal/app"
 	"github.com/baisystems/go-test/internal/pkg/config"
-	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/sqlitedialect"
-	"github.com/uptrace/bun/driver/sqliteshim"
+	"github.com/baisystems/go-test/internal/pkg/database"
+	"github.com/baisystems/go-test/internal/pkg/model"
+	"github.com/baisystems/go-test/internal/pkg/service"
 )
 
 func main() {
-	// Connect to SQLite database
-	dsn := "file::memory:?cache=shared"
-	sqldb, err := sql.Open(sqliteshim.ShimName, dsn)
-	if err != nil {
-		panic(err)
+
+	config := &config.Config{
+		Ctx: context.Background(),
 	}
 
-    // If you are using an in-memory database, you need to configure *sql.DB to NOT close active connections.
-	sqldb.SetMaxIdleConns(1000)
-	sqldb.SetConnMaxLifetime(0)
+	userDB := database.NewUserDatabase(config, &bun.DB{})
+	userDB.Init()
 
-	db := bun.NewDB(sqldb, sqlitedialect.New())
-    // db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
-    ctx := context.Background()
+	// Create a new UserService with the real database
+	userService := service.NewUserService(config, userDB)
 
-    config := &config.Config{
-        Ctx: ctx,
-        Db: db,
-    }
+	// Insert a new user with a primary key 1
+	user := &model.User{ID: 1, Name: "Charles Bay", Email: "name@company.com"}
+	if err := userService.CreateUser(user); err != nil {
+		log.Fatal(err)
+	}
 
-    err = user.RunUser(config)
-    if err != nil {
-        fmt.Println(err.Error())
-    }
+	// Select a user by the primary key 1.
+	// user := new(model.User)  // for newer go
+
+	user = &model.User{ID: 1}
+	retrievedUser, err := userService.GetUser(user.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Retrieved User: %+v\n", retrievedUser)
+
 }
