@@ -4,13 +4,34 @@ Golang testability demo
 
 ## Golang code coverage
 
+### list all packages
+
+```
 go list ./...
-go test ./... -cover
-go test ./... -coverprofile=coverage.out
-go tool ./... cover -html=coverage.out
+go test -v ./... 
+```
+
+### terminal coveragte report
+
+```
+go test -v -cover ./... 
+```
+
+### html coverage report
+```
+go test -coverprofile=z_coverage.out ./... 
+go tool cover -html=z_coverage.out -o z_coverage.html
+```
 
 
-### VSCode
+### inside editor with VSCode
+
+Open a .go file to vscode editor, then
+
+```
+Shift + Command + P
+Go: Toggle Test Coverage in Current Package
+```
 
 ### project layout
 

@@ -1,0 +1,462 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>cmd: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/baisystems/go-test/cmd/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/baisystems/go-test/internal/app/apiapp.go (0.0%)</option>
+				
+				<option value="file2">github.com/baisystems/go-test/internal/app/userapp.go (0.0%)</option>
+				
+				<option value="file3">github.com/baisystems/go-test/internal/pkg/database/mockuserdatabase.go (35.0%)</option>
+				
+				<option value="file4">github.com/baisystems/go-test/internal/pkg/database/userdatabase.go (0.0%)</option>
+				
+				<option value="file5">github.com/baisystems/go-test/internal/pkg/service/userservice.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "fmt"
+
+        "github.com/baisystems/go-test/internal/app"
+)
+
+func main() <span class="cov0" title="0">{
+
+    if err := app.RunUser(); err != nil </span><span class="cov0" title="0">{
+        fmt.Println(err.Error())
+    }</span>
+
+    <span class="cov0" title="0">if err := app.RunAPI(); err != nil </span><span class="cov0" title="0">{
+        fmt.Println(err.Error())
+    }</span>
+
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package app
+
+import (
+    "fmt"
+    "log"
+
+    "github.com/imroc/req/v3"
+        "github.com/baisystems/go-test/internal/pkg/model"
+)
+
+func RunAPI() error <span class="cov0" title="0">{
+
+        fmt.Printf("\n\n==========&gt; Calling RunAPI() ...\n")
+
+        // Create a new req client
+    client := req.C()
+
+    // Make a GET request to the API
+    resp, err := client.R().Get("https://jsonplaceholder.typicode.com/users/1")
+    if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Failed to make request: %v", err)
+                return err
+    }</span>
+
+    // Check if the request was successful
+    <span class="cov0" title="0">if resp.IsSuccessState() </span><span class="cov0" title="0">{
+        // Parse the JSON response into the User struct
+        var user model.User
+        err := resp.UnmarshalJson(&amp;user)
+        if err != nil </span><span class="cov0" title="0">{
+            log.Fatalf("Failed to unmarshal JSON: %v", err)
+                        return err
+        }</span>
+
+        // Print some of the data returned
+        <span class="cov0" title="0">fmt.Printf("User ID: %d\n", user.ID)
+        fmt.Printf("User Name: %s\n", user.Name)
+        fmt.Printf("User Email: %s\n", user.Email)</span>
+    } else<span class="cov0" title="0"> {
+        log.Fatalf("Request failed with status: %s", resp.Status)
+                return err
+    }</span>
+
+        <span class="cov0" title="0">fmt.Printf("\n\n\n")
+        return nil</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package app
+
+import (
+        "context"
+        "fmt"
+        "log"
+    "github.com/uptrace/bun"
+
+        "github.com/baisystems/go-test/internal/pkg/config"
+        "github.com/baisystems/go-test/internal/pkg/database"
+        "github.com/baisystems/go-test/internal/pkg/model"
+        "github.com/baisystems/go-test/internal/pkg/service"
+)
+
+func RunUser() error <span class="cov0" title="0">{
+        fmt.Printf("\n\n==========&gt; Calling RunUser() ...\n")
+
+        config := &amp;config.Config{
+                Ctx: context.Background(),
+        }
+
+        userDB := database.NewUserDatabase(config, &amp;bun.DB{})
+        userDB.Init()
+
+        // Create a new UserService with the real database
+        userService := service.NewUserService(config, userDB)
+
+        // Insert a new user with a primary key 1
+        user := &amp;model.User{ID: 1, Name: "Charles Bay", Email: "name@company.com"}
+        if err := userService.CreateUser(user); err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+
+        // Select a user by the primary key 1.
+        // user := new(model.User)  // for newer go
+
+        <span class="cov0" title="0">user = &amp;model.User{ID: 1}
+        retrievedUser, err := userService.GetUser(user.ID)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Printf("Retrieved User: %+v\n", retrievedUser)
+
+        return nil</span>
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package database
+
+import (
+        "errors"
+
+        "github.com/baisystems/go-test/internal/pkg/config"
+        "github.com/baisystems/go-test/internal/pkg/model"
+)
+
+type MockUserDatabase struct {
+        Config *config.Config
+        Users  map[int64]*model.User
+}
+
+func NewMockUserDatabase(config *config.Config, users map[int64]*model.User) *MockUserDatabase <span class="cov8" title="1">{
+        return &amp;MockUserDatabase{Config: config, Users: users}
+}</span>
+
+func (u *MockUserDatabase) Init() error <span class="cov0" title="0">{
+    if u.Users == nil </span><span class="cov0" title="0">{
+        u.Users = make(map[int64]*model.User)
+    }</span>
+    <span class="cov0" title="0">return nil</span>
+}
+
+func (u *MockUserDatabase) CreateUser(user *model.User) error <span class="cov8" title="1">{
+        if _, exists := u.Users[user.ID]; exists </span><span class="cov0" title="0">{
+                return errors.New("user already exists")
+        }</span>
+        <span class="cov8" title="1">u.Users[user.ID] = user
+        return nil</span>
+}
+
+func (u *MockUserDatabase) GetUser(id int64) (*model.User, error) <span class="cov8" title="1">{
+        user, exists := u.Users[id]
+        if !exists </span><span class="cov0" title="0">{
+                return nil, errors.New("user not found")
+        }</span>
+        <span class="cov8" title="1">return user, nil</span>
+}
+
+func (u *MockUserDatabase) UpdateUser(user *model.User) error <span class="cov0" title="0">{
+        if _, exists := u.Users[user.ID]; !exists </span><span class="cov0" title="0">{
+                return errors.New("user not found")
+        }</span>
+        <span class="cov0" title="0">u.Users[user.ID] = user
+        return nil</span>
+}
+
+func (u *MockUserDatabase) DeleteUser(id int64) error <span class="cov0" title="0">{
+        if _, exists := u.Users[id]; !exists </span><span class="cov0" title="0">{
+                return errors.New("user not found")
+        }</span>
+        <span class="cov0" title="0">delete(u.Users, id)
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package database
+
+import (
+        "database/sql"
+        "fmt"
+        "log"
+        "os"
+        "path"
+
+        "github.com/uptrace/bun"
+        "github.com/uptrace/bun/dialect/sqlitedialect"
+        "github.com/uptrace/bun/driver/sqliteshim"
+
+        "github.com/baisystems/go-test/internal/pkg/config"
+        "github.com/baisystems/go-test/internal/pkg/model"
+)
+
+type UserDatabase struct {
+        Config         *config.Config
+        Db                *bun.DB
+}
+
+func NewUserDatabase(config *config.Config, db *bun.DB) *UserDatabase <span class="cov0" title="0">{
+        return &amp;UserDatabase{Config: config, Db: db}
+}</span>
+
+func (u *UserDatabase) Init() error <span class="cov0" title="0">{
+
+        // Get the current working directory
+        cwd, err := os.Getwd()
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Println("Error:", err)
+                return err
+        }</span>
+
+        // Traverse up the directory tree until you find the project root
+        <span class="cov0" title="0">root := cwd
+        for </span><span class="cov0" title="0">{
+                if _, err := os.Stat(path.Join(root, "go.mod")); err == nil </span><span class="cov0" title="0">{
+                        break</span>
+                }
+                <span class="cov0" title="0">parent := path.Dir(root)
+                if parent == root </span><span class="cov0" title="0">{
+                        fmt.Println("Error: Project root not found")
+                        return err
+                }</span>
+                <span class="cov0" title="0">root = parent</span>
+        }
+
+        // Connect to SQLite database. If use as in memory:  dsn := "file::memory:?cache=shared"
+        <span class="cov0" title="0">dsn := fmt.Sprintf("file:%s/data/sqlite.db", root)
+        fmt.Println("dsn string: ", dsn)
+        sqldb, err := sql.Open(sqliteshim.ShimName, dsn)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        // If you are using an in-memory database, you need to configure *sql.DB to NOT close active connections.
+        // sqldb.SetMaxIdleConns(1000)
+        // sqldb.SetConnMaxLifetime(0)
+
+        <span class="cov0" title="0">db := bun.NewDB(sqldb, sqlitedialect.New())
+        // db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+        u.Db = db
+
+        // Check if the table exists
+        var exists bool
+        query := `SELECT count(*) FROM sqlite_master WHERE type='table' AND name='users';`
+        if err := u.Db.NewRaw(query).Scan(u.Config.Ctx, &amp;exists); err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+
+        <span class="cov0" title="0">if exists </span><span class="cov0" title="0">{
+                fmt.Println("Table exists")
+        }</span> else<span class="cov0" title="0"> {
+                // Create users table.
+                if _, err := u.Db.NewCreateTable().Model((*model.User)(nil)).Exec(u.Config.Ctx); err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                        return err
+                }</span>
+        }
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (u *UserDatabase) CreateUser(user *model.User) error <span class="cov0" title="0">{
+        fmt.Printf("Creating user: %+v to database \n", user)
+
+        existingUser, err := u.GetUser(user.ID)
+        if err != nil </span><span class="cov0" title="0">{
+                // not existing, do insert
+                res, err := u.Db.NewInsert().Model(user).Exec(u.Config.Ctx)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                        return err
+                }</span>
+
+                <span class="cov0" title="0">n, _ := res.RowsAffected()
+                fmt.Printf("insert succeed, rows affected: %d \n", n)
+
+                return nil</span>
+
+        }
+
+        <span class="cov0" title="0">if equal := compareUsers(*existingUser, *user); !equal </span><span class="cov0" title="0">{
+                return u.UpdateUser(user)
+        }</span>
+        <span class="cov0" title="0">fmt.Println("user existing and no change on data, do nothing")
+        return nil</span>
+}
+
+func (u *UserDatabase) GetUser(id int64) (*model.User, error) <span class="cov0" title="0">{
+        fmt.Printf("GetUser with ID: %d \n", id)
+
+        user := &amp;model.User{ID: id, Name: "", Email: ""}
+        if err := u.Db.NewSelect().Model(user).Where("id = ?", user.ID).Scan(u.Config.Ctx); err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+                return &amp;model.User{}, err
+        }</span>
+        <span class="cov0" title="0">return user, nil</span>
+}
+
+func (u *UserDatabase) UpdateUser(user *model.User) error <span class="cov0" title="0">{
+        // if _, exists := u.Users[user.ID]; !exists {
+        //     return errors.New("user not found")
+        // }
+        // u.Users[user.ID] = user
+
+        res, err := u.Db.NewUpdate().Model(user).Where("id = ?", user.ID).Exec(u.Config.Ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+                return err
+        }</span>
+
+        <span class="cov0" title="0">n, _ := res.RowsAffected()
+        fmt.Printf("update succeed, rows affected: %d \n", n)
+
+        return nil</span>
+}
+
+func (u *UserDatabase) DeleteUser(id int64) error <span class="cov0" title="0">{
+        // if _, exists := u.Users[id]; !exists {
+        //         return errors.New("user not found")
+        // }
+        // delete(u.Users, id)
+        return nil
+}</span>
+
+func compareUsers(u1 model.User, u2 model.User) bool <span class="cov0" title="0">{
+        return u1.ID == u2.ID &amp;&amp; u1.Name == u2.Name &amp;&amp; u1.Email == u2.Email
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package service
+
+import (
+        "github.com/baisystems/go-test/internal/pkg/config"
+        "github.com/baisystems/go-test/internal/pkg/database"
+        "github.com/baisystems/go-test/internal/pkg/model"
+)
+
+type UserService struct {
+        Config *config.Config
+        Db     database.UserDatabaseInterface
+}
+
+func NewUserService(config *config.Config, db database.UserDatabaseInterface) *UserService <span class="cov8" title="1">{
+        return &amp;UserService{Config: config, Db: db}
+}</span>
+
+func (s *UserService) CreateUser(user *model.User) error <span class="cov8" title="1">{
+        return s.Db.CreateUser(user)
+}</span>
+
+func (s *UserService) GetUser(id int64) (*model.User, error) <span class="cov8" title="1">{
+        return s.Db.GetUser(id)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
