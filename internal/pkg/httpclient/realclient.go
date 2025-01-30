@@ -1,26 +1,30 @@
 package httpclient
 
 import (
-	"github.com/baisystems/go-test/internal/pkg/model"
+	// "github.com/baisystems/go-test/internal/pkg/model"
 	"github.com/imroc/req/v3"
 )
 
-type RealClient struct {
+type HTTPClient struct {
 	Client		*req.Client
 	PostData	map[string]interface{}
 }
 
-func NewClient() *RealClient {
-	return &RealClient{
+func NewHTTPClient() *HTTPClient {
+	return &HTTPClient{
 		Client: req.C(),
 		PostData: make(map[string]interface{}),
 	}
 }
 
-func (rc RealClient) NewRequest() *req.Request {
-	return rc.Client.NewRequest()
+func (hc HTTPClient) NewRequest() *req.Request {
+	return hc.Client.NewRequest()
 }
 
-func (rc RealClient) Post() (resp model.PostResponse, err error) {
-	
+func (hc HTTPClient) SetBody(body interface{}) *req.Request {
+	return hc.SetBody(body)
+}
+
+func (hc HTTPClient) Post(url string) (*req.Response, error) {
+	return hc.NewRequest().Post(url)
 }
