@@ -31,3 +31,12 @@ func (m *MockClient) Post(url string) (*req.Response, error) {
     }
     return response, args.Error(1)
 }
+
+func (m *MockClient) Get(url string) (*req.Response, error) {
+    args := m.Called(url)
+    response, ok := args.Get(0).(*req.Response)
+    if !ok {
+        panic("type assertion to *req.Response failed")
+    }
+    return response, args.Error(1)
+}

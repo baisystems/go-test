@@ -1,12 +1,12 @@
 package app
 
 import (
-    "fmt"
-    "log"
+	"fmt"
+	"log"
 
     "github.com/imroc/req/v3"
+	"github.com/baisystems/go-test/internal/pkg/httpclient"
 	"github.com/baisystems/go-test/internal/pkg/model"
-    "github.com/baisystems/go-test/internal/pkg/httpclient"
 )
 
 func RunAPI() error {
@@ -61,29 +61,29 @@ func CreatePost(client httpclient.HTTPClientInterface) error {
 func DoGet() error {
 	fmt.Printf("\n\n==========> Calling DoGet() ...\n")
 
-    client := req.C()
-
-    resp, err := client.R().Get("https://jsonplaceholder.typicode.com/users/1")
+    client := httpclient.NewHTTPClient()
+    client.NewRequest()
+    
+    resp, err := GetUser(client, 1); 
     if err != nil {
-		log.Fatalf("Failed to make request: %v", err)
+        log.Fatalf("Failed calling GetUser func: %v", err)
 		return err
     }
 
-    if resp.IsSuccessState() {
-        var user model.User
-        err := resp.UnmarshalJson(&user)
-        if err != nil {
-            log.Fatalf("Failed to unmarshal JSON: %v", err)
-			return err
-        }
-
-        fmt.Printf("User ID: %d\n", user.ID)
-        fmt.Printf("User Name: %s\n", user.Name)
-        fmt.Printf("User Email: %s\n", user.Email)
-    } else {
-        log.Fatalf("Request failed with status: %s", resp.Status)
-		return err
+    var user model.User
+    err = resp.UnmarshalJson(&user)
+    if err != nil {
+        log.Fatalf("Failed to unmarshal JSON: %v", err)
+        return err
     }
 
+    fmt.Printf("User ID: %d\n", user.ID)
+    fmt.Printf("User Name: %s\n", user.Name)
+    fmt.Printf("User Email: %s\n", user.Email)
 	return nil
+}
+
+func GetUser(client httpclient.HTTPClientInterface, userId int) (*req.Response, error) {
+    url := fmt.Sprintf("https://jsonplaceholder.typicode.com/users/%d", userId)
+    return client.Get(url)
 }
