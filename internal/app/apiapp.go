@@ -6,6 +6,7 @@ import (
 
     "github.com/imroc/req/v3"
 	"github.com/baisystems/go-test/internal/pkg/model"
+    "github.com/baisystems/go-test/internal/pkg/httpclient"
 )
 
 func RunAPI() error {
@@ -25,7 +26,7 @@ func RunAPI() error {
 func DoPost() error {
 	fmt.Printf("\n\n==========> Calling DoPost() ...\n")
 
-    client := req.C()
+    client := httpclient.NewHTTPClient()
 
     newPost := model.Post{
         Title:  "My 1st post to an endpont",
@@ -33,31 +34,28 @@ func DoPost() error {
         UserID: 1,
     }
 
-    resp, err := client.R().
-        SetBody(newPost).
-        Post("https://jsonplaceholder.typicode.com/posts")
-    if err != nil {
-        log.Fatalf("Failed to make request: %v", err)
-		return err
+    client.NewRequest().SetBody(newPost)
+    if err := CreatePost(client); err != nil {
+        log.Fatalf("Failed to create post: %v", err)
+        return err
     }
 
-    if resp.IsSuccessState() {
-        var response model.PostResponse
-        err := resp.UnmarshalJson(&response)
-        if err != nil {
-            log.Fatalf("Failed to unmarshal JSON: %v", err)
-        }
-
-        // Print some of the data returned
-        fmt.Printf("Post ID: %d\n", response.ID)
-        fmt.Printf("Post Title: %s\n", response.Title)
-        fmt.Printf("Post Body: %s\n", response.Body)
-        fmt.Printf("User ID: %d\n", response.UserID)
-    } else {
-        log.Fatalf("Request failed with status: %s", resp.Status)
-		return err
-    }
 	return nil
+}
+
+func CreatePost(client httpclient.HTTPClientInterface) error {
+
+    resp, err := client.Post("https://jsonplaceholder.typicode.com/posts")
+
+    if err != nil {
+        return err
+    }
+
+    if resp.Response.StatusCode == 201 {
+        fmt.Println("real or mock http post request succeed")
+        return nil
+    }
+    return fmt.Errorf("request failed with status: %s", resp.Status)
 }
 
 func DoGet() error {
